@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>妙搭数据导出助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100%;
+      min-width: 240px;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      background: white;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 内容区域 */
+    .content-scroll {
+      flex: 1;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* 自定义滚动条 */
+    body::-webkit-scrollbar {
+      width: 8px;
+    }
+    body::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+    }
+    body::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.6);
+      border-radius: 4px;
+    }
+    body::-webkit-scrollbar-thumb:hover {
+      background: rgba(102, 126, 234, 0.8);
+    }
+
+    h1 {
+      font-size: 16px;
+      color: #333;
+      margin: 0 0 2px 0;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin: 0 0 8px 0;
+      flex-shrink: 0;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 3px solid #2196f3;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #1565c0;
+      flex-shrink: 0;
+    }
+
+    .info-box small {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .info-box.success {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+      color: #2e7d32;
+    }
+
+    .toast-status {
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .toast-status.show {
+      display: block;
+    }
+
+    .toast-status.info {
+      background: #e3f2fd;
+      color: #1565c0;
+      border-left: 3px solid #2196f3;
+    }
+
+    .toast-status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-left: 3px solid #4caf50;
+    }
+
+    .toast-status.error {
+      background: #ffebee;
+      color: #c62828;
+      border-left: 3px solid #f44336;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 8px;
+    }
+
+    .form-group.table-select-group {
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    /* 响应式布局：窄屏幕下改为垂直排列 */
+    @media (max-width: 300px) {
+      .form-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .form-row .form-group {
+        margin-bottom: 0;
+      }
+      
+      .content-scroll {
+        padding: 10px 12px;
+        gap: 6px;
+      }
+      
+      h1 {
+        font-size: 14px;
+      }
+      
+      .subtitle {
+        font-size: 11px;
+      }
+      
+      .info-box {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      
+      .capture-status {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      
+      label {
+        font-size: 11px;
+        margin-bottom: 3px;
+      }
+      
+      select, input {
+        padding: 5px 8px;
+        font-size: 11px;
+        height: 30px;
+      }
+      
+      .field-preview {
+        padding: 8px 10px;
+      }
+      
+      .field-preview h4 {
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      
+      .field-tag {
+        padding: 2px 6px;
+        font-size: 11px;
+      }
+      
+      .table-info {
+        font-size: 11px;
+      }
+      
+      .status, .toast-status {
+        font-size: 11px;
+        padding: 5px 8px;
+      }
+      
+      .progress-text {
+        font-size: 11px;
+      }
+      
+      .checkbox-group label {
+        font-size: 12px;
+      }
+      
+      button {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      
+      .fixed-bottom {
+        padding: 6px 12px 10px 12px;
+      }
+    }
+    
+    /* 超窄屏幕优化 */
+    @media (max-width: 260px) {
+      .content-scroll {
+        padding: 8px 10px;
+      }
+      
+      .fixed-bottom {
+        padding: 5px 10px 8px 10px;
+      }
+      
+      .field-list {
+        gap: 4px;
+      }
+      
+      .field-tag {
+        padding: 2px 5px;
+        font-size: 10px;
+      }
+      
+      h1 {
+        font-size: 13px;
+      }
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 12px;
+      height: 32px;
+      background: #fafafa;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    select option {
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+
+    select:disabled, input:disabled {
+      background: #f0f0f0;
+      cursor: not-allowed;
+    }
+
+    /* 固定底部区域容器 */
+    .fixed-bottom {
+      padding: 8px 16px 12px 16px;
+      background: white;
+      border-top: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+
+    .fixed-bottom .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      background: transparent;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #555;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #e0e0e0;
+    }
+
+    .status {
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+      white-space: pre-wrap;
+      flex-shrink: 0;
+    }
+
+    .status.info {
+      display: block;
+      background: #e3f2fd;
+      color: #1565c0;
+      border-left: 4px solid #2196f3;
+    }
+
+    .status.success {
+      display: block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #4caf50;
+    }
+
+    .status.error {
+      display: block;
+      background: #ffebee;
+      color: #c62828;
+      border-left: 4px solid #f44336;
+    }
+
+    .progress {
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 2px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    .progress.show {
+      display: block;
+    }
+
+    .fixed-bottom .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      background: transparent;
+      border-radius: 0;
+      margin: 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      font-weight: normal;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .table-info {
+      font-size: 12px;
+      color: #666;
+      margin: 4px 0 8px 0;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed #e0e0e0;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .field-preview {
+      flex: 1;
+      min-height: 80px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 12px;
+      border: 1px solid #e0e0e0;
+      overflow: hidden; /* 禁止滚动 */
+    }
+
+    .field-preview h4 {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .field-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .field-tag {
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .field-tag.user {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .capture-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fff3e0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #e65100;
+      flex-shrink: 0;
+    }
+
+    .capture-status.ready {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .capture-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff9800;
+      animation: pulse 1.5s infinite;
+    }
+
+    .capture-status.ready .capture-dot {
+      background: #4caf50;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content-scroll">
+      <h1>🚀 妙搭数据导出助手</h1>
+    <p class="subtitle">自动捕获请求，一键导出数据</p>
+
+    <div class="capture-status" id="captureStatus">
+      <div class="capture-dot"></div>
+      <span id="captureText">正在等待捕获页面请求...</span>
+    </div>
+
+    <div class="info-box">
+      <strong>使用方法：</strong><br>
+      1. 在妙搭页面中刷新或切换数据表<br>
+      2. 插件自动捕获请求并获取表列表<br>
+      3. 选择数据表后点击「导出数据」<br>
+      <!-- <small style="color: #666;">（切换回插件时会自动刷新）</small> -->
+    </div>
+
+    <!-- 获取表列表的状态提示 -->
+    <div class="toast-status" id="toastStatus"></div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="appId">应用 ID</label>
+        <input type="text" id="appId" placeholder="等待自动捕获或手动填写...">
+      </div>
+      <div class="form-group">
+        <label for="workspace">工作区 ID</label>
+        <input type="text" id="workspace" placeholder="等待自动捕获或手动填写...">
+      </div>
+    </div>
+
+    <div class="form-group table-select-group">
+      <label for="tableSelect">选择数据表</label>
+      <select id="tableSelect" disabled>
+        <option value="">等待自动获取表列表...</option>
+      </select>
+    </div>
+
+    <div class="field-preview" id="fieldPreview" style="display: none;">
+      <h4>表字段预览：</h4>
+      <p class="table-info" id="tableInfo"></p>
+      <div class="field-list" id="fieldList"></div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="progress" id="progress">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p class="progress-text" id="progressText">准备导出...</p>
+    </div>
+    </div><!-- /.content-scroll -->
+
+    <!-- 固定底部区域：checkbox + 导出按钮 -->
+    <div class="fixed-bottom">
+      <div class="checkbox-group">
+        <input type="checkbox" id="expandUserFields" checked>
+        <label for="expandUserFields">展开人员字段（导出 ID、姓名、邮箱）</label>
+      </div>
+      <div class="button-group">
+        <button class="btn-primary" id="exportData" disabled>导出数据</button>
+      </div>
+    </div>
+  </div><!-- /.container -->
+
+  <script src="sidebar.js"></script>
+</body>
+</html>

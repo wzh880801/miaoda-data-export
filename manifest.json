@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "妙搭数据导出助手",
+  "version": "2.0.0",
+  "description": "从妙搭数据管理后台导出完整数据表，支持人员字段展开导出",
+  "permissions": [
+    "activeTab",
+    "cookies",
+    "storage",
+    "scripting",
+    "webRequest",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "https://miaoda.feishu.cn/*"
+  ],
+  "action": {
+    "default_title": "打开妙搭数据导出助手"
+  },
+  "side_panel": {
+    "default_path": "sidebar.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://miaoda.feishu.cn/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
