@@ -628,8 +628,9 @@ async function exportLargeTable(workspace, appId, tableName, headers, schema, ex
     while (hasMore) {
       currentPage++;
       
-      // 更新进度
-      updateProgress(currentPage, totalPages, `流式导出中，${currentPage}/${totalPages} 页 (${totalExported.toLocaleString()}/${totalCount.toLocaleString()} 条)...`);
+      // 更新进度（如果实际页数超过预估，显示为 ?）
+      const displayTotalPages = currentPage > totalPages ? currentPage : totalPages;
+      updateProgress(currentPage, displayTotalPages, `流式导出中，${currentPage}/${displayTotalPages} 页 (${totalExported.toLocaleString()}/${totalCount.toLocaleString()} 条)...`);
 
       const url = `https://miaoda.feishu.cn/play/api/v2/dataloom/app/${appId}/workspaces/${workspace}/admin/data/${tableName}?order=_created_at.desc,id.desc&offset=${offset}&limit=${limit}&dbBranch=main`;
       
@@ -710,7 +711,7 @@ async function fetchAllData(workspace, appId, tableName, headers, knownTotalCoun
     
     // 更新进度显示：第 X/Y 页
     if (totalPages) {
-      updateProgress(currentPage, totalPages, `自动翻页获取数据中，${currentPage}/${totalPages}...`);
+      updateProgress(currentPage, totalPages, `自动翻页获取数据中，${currentPage}/${currentPage > totalPages ? currentPage : totalPages}...`);
     } else {
       updateProgress(allData.length, '?', `自动翻页获取数据中，第 ${currentPage} 页...`);
     }
