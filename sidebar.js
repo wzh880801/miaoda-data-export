@@ -510,7 +510,7 @@ exportDataBtn.addEventListener('click', async () => {
     }
 
     // 根据数据量选择导出方式
-    const LARGE_TABLE_THRESHOLD = 50000; // 5万条阈值
+    const LARGE_TABLE_THRESHOLD = 5000; // 5000条阈值
     
     if (totalCount !== null && totalCount > LARGE_TABLE_THRESHOLD) {
       // 大表：使用流式导出
